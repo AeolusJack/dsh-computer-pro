@@ -27,7 +27,7 @@ export async function native(request,signal) {
   signal?.throwIfAborted();
   preparation??=prepare().catch(error=>{preparation=undefined;throw error;});
   const executable=await preparation;
-  const reply=JSON.parse(await run(executable,[],{input:JSON.stringify(request),signal}));
+  const reply=JSON.parse(await run(executable,[],{input:JSON.stringify(request),signal,maxBytes:40*1024*1024,timeoutMs:60000}));
   if(!reply.ok)throw new Error(reply.error||'NATIVE_FAILED');
   return reply.result;
 }
@@ -43,12 +43,13 @@ export function findSessionImage(events,id) {
   }
   throw new Error('IMAGE_NOT_IN_SESSION: return the screenshot first, then call OCR in a subsequent tool call.');
 }
-export async function recognizeImage(attachments,events,id,language,signal) {
+export async function recognizeImage(attachments,events,id,language,signal,{region,scale}={}) {
+  if(process.platform!=='win32'&&(region!==undefined||scale!==undefined))throw new Error('OCR_CROP_WINDOWS_ONLY');
   const ref=findSessionImage(events,id);
   if(ref.bytes>32*1024*1024||ref.width*ref.height>25000000)throw new Error('IMAGE_LIMIT');
   const stored=await attachments.readImage(ref,signal);
   const directory=await mkdtemp(join(tmpdir(),'computer-pro-ocr-'));
   try {const path=join(directory,'image');await writeFile(path,stored.data,{mode:0o600});
-    return await native({method:'ocr',path,...language?{language}:{}},signal);
+    return await native({method:'ocr',path,...language?{language}:{},...(region?{region}:{}),...(scale!==undefined?{scale}:{})},signal);
   }finally{await rm(directory,{recursive:true,force:true});}
 }

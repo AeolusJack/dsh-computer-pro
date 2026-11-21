@@ -23,6 +23,7 @@
         connectTimeoutMs: 30000
         graceMs: 3000
         maxClickHoldMs: 5000
+        fullAccessControlsDesktop: true
     - id: computer-pro-information
       name: dsh-windows-computer-pro/info
     - id: computer-pro-extras

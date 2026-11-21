@@ -239,6 +239,16 @@
       "sha256": "43d9d2ac0ba4f67b5e0a1bf08f5e247ed44badf5227b1b3dd85b2bf962c7ca24"
     },
     {
+      "path": "DocumentFormat.OpenXml.dll",
+      "bytes": 7985120,
+      "sha256": "ee2a31ff79db570e2eb98ec7513b222f2b8c6bfcb638d66c2cec8255b0bbe499"
+    },
+    {
+      "path": "DocumentFormat.OpenXml.Framework.dll",
+      "bytes": 478688,
+      "sha256": "ff3ed8318388d84fa5bbc5736df6144ecfa3165c0b95f6b45b5330f463edf7ae"
+    },
+    {
       "path": "dsh-computer-pro-0.2.0.deps.json",
       "bytes": 42644,
       "sha256": "ea47d07f3cdf7222e29c837f2aa86223675d0eea2509b4a3b36b07502a92b83c"
@@ -265,23 +275,23 @@
     },
     {
       "path": "dsh-computer-pro-extras.deps.json",
-      "bytes": 28761,
-      "sha256": "efc166e50b97ddd71704f235afa40ada89d277dd16ee067d734da90b6881f309"
+      "bytes": 34535,
+      "sha256": "0c1179729c9ae5e2d345a5eca97182e9400ffe52612f1ed023dbebba18dac176"
     },
     {
       "path": "dsh-computer-pro-extras.dll",
-      "bytes": 27136,
-      "sha256": "c3083b0f1600e1f4b1f4103572b716654247e860533bf8195dd4524ec25ea875"
+      "bytes": 71168,
+      "sha256": "23fe285d3011954f15acacf70d0ec88261f2ca0e03a16bf226592096040cf12c"
     },
     {
       "path": "dsh-computer-pro-extras.exe",
-      "bytes": 162304,
-      "sha256": "354dcb3b0715f5d1983e3a521ae816fa5b720f776495bf4c97bad77bae87a871"
+      "bytes": 162816,
+      "sha256": "b3207cb89eb22c6d0edf032eb3f318dd6a67d9ed22753e2a346fbf2d61684ccd"
     },
     {
       "path": "dsh-computer-pro-extras.runtimeconfig.json",
-      "bytes": 431,
-      "sha256": "4b6fe571a0908fe990230087e2d32ef721ad72b200b763fc1d21b869e9860d9a"
+      "bytes": 529,
+      "sha256": "90ad7933e57167dca2b7eb7aac4988c540fec9d53fc1d31a0b2f451d0e866e9f"
     },
     {
       "path": "dsh-cua-windows.dll.config",

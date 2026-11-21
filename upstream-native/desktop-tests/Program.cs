@@ -130,6 +130,7 @@ internal static class Program
                             case "sibling": sibling.Show(); sibling.Activate(); sibling.Editor.Focus(); Write(sibling.Inspect()); break;
                             case "inspect": Write(form.Inspect()); break;
                             case "focus": form.Activate(); form.Editor.Focus(); Write(form.Inspect()); break;
+                            case "topmost": form.TopMost=true; form.Show(); form.Activate(); form.Editor.Focus(); Write(form.Inspect()); break;
                             case "pointer": form.PointAtButton(); Write(form.Inspect()); break;
                             case "pointer-outside": form.PointOutside(); Write(form.Inspect()); break;
                             case "cover": form.Cover(sibling); Write(new { form = form.Inspect(), sibling = sibling.Inspect() }); break;

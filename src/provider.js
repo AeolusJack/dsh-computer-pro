@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import Schema from '@deepseek-ai/schemastery';
-const NativeProvider = await (process.platform === 'darwin' ? import('@deepseek-ai/dsh-cua-macos') : import('@deepseek-ai/dsh-cua-windows'));
+const NativeProvider = await (process.platform === 'darwin' ? import('@deepseek-ai/dsh-cua-macos') : import('./vendor/windows.js'));
 import { verifyPayload } from './payload.js';
 
 export const name = 'computer-pro-desktop';
@@ -9,6 +9,7 @@ export const Config = Schema.object({
   ...NativeProvider.Config.dict,
   ...(process.platform === 'win32' ? {helperPath: Schema.never().hidden()} : {}),
   maxClickHoldMs: Schema.number().step(1).min(1).max(60000).default(5000),
+  fullAccessControlsDesktop: Schema.boolean().default(true).description('Windows: current DSH full access also authorizes desktop control, without per-app prompts. Explicit denials remain enforced; mode changes are checked before every operation.'),
 });
 
 /** Delegate all observations and input to Harness's existing consent and session pipeline. */

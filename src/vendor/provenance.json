@@ -1,0 +1,10 @@
+{
+  "cua": {
+    "sha256": "a1edddb1c126afc6e15d8370d3486f9feda5a7e2d23674da9ee2ddba439b4e17",
+    "upstream": "2e39e70496aa02986ca6a820c5d497e816b69d7e"
+  },
+  "cua-windows": {
+    "sha256": "e7325d50b4bce0df6ad81cb51785c893e7d6ef929abc2f7c6b23ef14fb095a3e",
+    "upstream": "2e39e70496aa02986ca6a820c5d497e816b69d7e"
+  }
+}

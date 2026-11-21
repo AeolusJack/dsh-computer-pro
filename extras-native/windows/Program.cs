@@ -10,12 +10,18 @@ internal static class Program {
     static readonly JsonSerializerOptions Json = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     [STAThread] static int Main() {
         try {
+            Console.InputEncoding=new System.Text.UTF8Encoding(false,true);
+            Console.OutputEncoding=new System.Text.UTF8Encoding(false);
             using var doc = JsonDocument.Parse(Console.In.ReadToEnd());
             var r=doc.RootElement;
             object result = r.GetProperty("method").GetString() switch {
                 "capabilities" => new {platform="windows", languages=OcrEngine.AvailableRecognizerLanguages.Select(l=>l.LanguageTag).ToArray(), maxImageDimension=OcrEngine.MaxImageDimension},
-                "apps" => Catalog(),
-                "launch" => Launch(r.GetProperty("id").GetString() ?? ""),
+                "apps" => Applications.Catalog(),
+                "launch" => Applications.Launch(r.GetProperty("id").GetString() ?? ""),
+                "office_read" => Office.Read(r),
+                "office_edit_copy" => Office.EditCopy(r),
+                "desktop_capture" => Desktop.Capture(),
+                "desktop_action" => Desktop.Act(r),
                 "ocr" => Recognize(r).GetAwaiter().GetResult(),
                 _ => throw new ArgumentException("UNKNOWN_METHOD")
             };
@@ -24,57 +30,28 @@ internal static class Program {
             Console.WriteLine(JsonSerializer.Serialize(new {ok=false,error=e.Message}, Json));return 1;
         }
     }
-    record App(string Id,string Name);
-    [ComImport,Guid("2e941141-7f97-4756-ba1d-9decde894a3d"),InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    interface IActivationManager {
-        [PreserveSig] int ActivateApplication([MarshalAs(UnmanagedType.LPWStr)]string appId,[MarshalAs(UnmanagedType.LPWStr)]string? arguments,uint options,out uint processId);
-    }
-    static App[] Catalog() {
-        dynamic shell=Activator.CreateInstance(Type.GetTypeFromProgID("Shell.Application")!)!;
-        object? folder=null,items=null;
-        var result=new List<App>();
-        try {
-            folder=shell.NameSpace("shell:AppsFolder");
-            if(folder is null)throw new InvalidOperationException("APP_CATALOG_UNAVAILABLE");
-            items=((dynamic)folder).Items();
-            int count=((dynamic)items).Count;
-            for(int i=0;i<Math.Min(count,10000);i++) {
-                object item=((dynamic)items).Item(i);
-                try {var id=(string)((dynamic)item).Path;var name=(string)((dynamic)item).Name;
-                    if(!string.IsNullOrWhiteSpace(id))result.Add(new(id,name));}
-                finally {Marshal.FinalReleaseComObject(item);}
-            }
-        } finally {if(items!=null)Marshal.FinalReleaseComObject(items);if(folder!=null)Marshal.FinalReleaseComObject(folder);Marshal.FinalReleaseComObject(shell);}
-        return result.DistinctBy(x=>x.Id).OrderBy(x=>x.Name).ToArray();
-    }
-    static object Launch(string id) {
-        var app=Catalog().SingleOrDefault(a=>a.Id==id) ?? throw new ArgumentException("APP_NOT_IN_CATALOG");
-        // Packaged apps return the OS activation result and PID, rather than an Explorer dispatch receipt.
-        uint? processId=null;
-        if(Path.IsPathFullyQualified(app.Id) && Path.GetExtension(app.Id).Equals(".exe",StringComparison.OrdinalIgnoreCase) && File.Exists(app.Id)) {
-            // GUI ShellExecute avoids handing our JSON protocol pipes to the launched application.
-            // No command shell, arguments or elevation verb is used.
-            using var process=Process.Start(new ProcessStartInfo(app.Id){UseShellExecute=true,Verb="open"}) ?? throw new InvalidOperationException("LAUNCH_FAILED");
-            processId=(uint)process.Id;
-        } else if(app.Id.Contains('!')) {
-            object manager=Activator.CreateInstance(Type.GetTypeFromCLSID(new Guid("45BA127D-10A8-46EA-8AB7-56EA9078943C"))!)!;
-            try {int hr=((IActivationManager)manager).ActivateApplication(app.Id,null,0,out uint pid);
-                if(hr<0)Marshal.ThrowExceptionForHR(hr);processId=pid;}
-            finally{Marshal.FinalReleaseComObject(manager);}
-        } else {
-            dynamic shell=Activator.CreateInstance(Type.GetTypeFromProgID("Shell.Application")!)!;
-            object? folder=null,item=null;
-            try {folder=shell.NameSpace("shell:AppsFolder");item=((dynamic)folder!).ParseName(app.Id);
-                if(item==null)throw new InvalidOperationException("APP_DISAPPEARED");((dynamic)item).InvokeVerb("open");}
-            finally{if(item!=null)Marshal.FinalReleaseComObject(item);if(folder!=null)Marshal.FinalReleaseComObject(folder);Marshal.FinalReleaseComObject(shell);}
-        }
-        return new {dispatched=true,verified=false,processId,app,next="Observe the application's windows before sending input. Launch is never automatically retried."};
-    }
     static async Task<object> Recognize(JsonElement r) {
         string path=r.GetProperty("path").GetString() ?? throw new ArgumentException("IMAGE_REQUIRED");
         var file=new FileInfo(path);
         if(!file.Exists||file.Length>32*1024*1024)throw new ArgumentException("IMAGE_TOO_LARGE_OR_MISSING");
         var data=await File.ReadAllBytesAsync(path);
+        int scale=r.TryGetProperty("scale",out var scaleValue)?scaleValue.GetInt32():1;
+        if(scale<1||scale>3)throw new ArgumentException("OCR_SCALE_LIMIT: use 1, 2 or 3");
+        int originX=0,originY=0,originalWidth,originalHeight;
+        using(var sourceStream=new MemoryStream(data))using(var original=new System.Drawing.Bitmap(sourceStream)) {
+            originalWidth=original.Width;originalHeight=original.Height;
+            if((long)originalWidth*originalHeight>25000000)throw new ArgumentException("IMAGE_DIMENSIONS_EXCEEDED");
+            int width=originalWidth,height=originalHeight;
+            if(r.TryGetProperty("region",out var region)) {originX=region.GetProperty("x").GetInt32();originY=region.GetProperty("y").GetInt32();width=region.GetProperty("width").GetInt32();height=region.GetProperty("height").GetInt32();}
+            if(originX<0||originY<0||width<1||height<1||(long)originX+width>originalWidth||(long)originY+height>originalHeight)throw new ArgumentException("INVALID_OCR_REGION");
+            if((long)width*scale>OcrEngine.MaxImageDimension||(long)height*scale>OcrEngine.MaxImageDimension||(long)width*height*scale*scale>25000000)throw new ArgumentException("OCR_CROP_TOO_LARGE");
+            if(scale!=1||originX!=0||originY!=0||width!=originalWidth||height!=originalHeight) {
+                using var resized=new System.Drawing.Bitmap(width*scale,height*scale);
+                using(var g=System.Drawing.Graphics.FromImage(resized)){g.InterpolationMode=System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                    g.DrawImage(original,new System.Drawing.Rectangle(0,0,resized.Width,resized.Height),new System.Drawing.Rectangle(originX,originY,width,height),System.Drawing.GraphicsUnit.Pixel);}
+                using var encoded=new MemoryStream();resized.Save(encoded,System.Drawing.Imaging.ImageFormat.Png);data=encoded.ToArray();
+            }
+        }
         using var stream=new InMemoryRandomAccessStream();
         using(var writer=new DataWriter(stream)){writer.WriteBytes(data);await writer.StoreAsync();writer.DetachStream();}
         stream.Seek(0);
@@ -86,9 +63,9 @@ internal static class Program {
         if(engine==null)throw new ArgumentException("OCR_LANGUAGE_UNAVAILABLE: install the requested Windows language pack or select an available language.");
         using var bitmap=await decoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8,BitmapAlphaMode.Premultiplied);
         var result=await engine.RecognizeAsync(bitmap);
-        return new {text=result.Text,language=engine.RecognizerLanguage.LanguageTag,width=decoder.PixelWidth,height=decoder.PixelHeight,
+        return new {text=result.Text,language=engine.RecognizerLanguage.LanguageTag,width=originalWidth,height=originalHeight,scale,originX,originY,
             coordinateSpace="image-pixels-top-left",textAngle=result.TextAngle,
             lines=result.Lines.Select(line=>new {text=line.Text,words=line.Words.Select(word=>new {
-                text=word.Text,x=word.BoundingRect.X,y=word.BoundingRect.Y,width=word.BoundingRect.Width,height=word.BoundingRect.Height,confidence=(double?)null}).ToArray()}).ToArray()};
+                text=word.Text,x=originX+word.BoundingRect.X/scale,y=originY+word.BoundingRect.Y/scale,width=word.BoundingRect.Width/scale,height=word.BoundingRect.Height/scale,confidence=(double?)null}).ToArray()}).ToArray()};
     }
 }

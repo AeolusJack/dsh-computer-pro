@@ -1,115 +1,109 @@
 # Computer Pro for DeepSeek Harness
 
-Desktop control, local OCR, application launching and isolated Chromium DOM automation.
-Maintained by [AeolusJack](https://github.com/AeolusJack). Community plugin; not affiliated with DeepSeek or OpenAI.
+Windows desktop automation, local OCR, application launching, structured document editing, and isolated Chromium DOM tools.
+Maintained by [AeolusJack](https://github.com/AeolusJack). Community software, not affiliated with DeepSeek or OpenAI.
 
-**Release status:** Windows x64 acceptance candidate. macOS arm64 and x64 adapters are experimental and have not been compiled or tested on a Mac. This is not a cross-platform production-certified release.
+**0.3.0: Windows acceptance candidate.** macOS remains experimental. Single-machine tests do not establish production certification or support for every application.
 
-## Install the published package
+## 安装
 
-Requires DeepSeek Harness **0.2.2-rc.5**, Node.js **24.9+**, and pnpm. Close Harness before an offline installation. Run in the Harness source checkout:
-
-```sh
-pnpm dsh plugin --profile web add "https://github.com/AeolusJack/dsh-computer-pro/releases/download/v0.2.0/dsh-windows-computer-pro-0.2.0.tgz"
-```
-
-Download and checksums: [v0.2.0 release](https://github.com/AeolusJack/dsh-computer-pro/releases/tag/v0.2.0). If your package manager cannot download the URL, download the `.tgz` there and supply its absolute local path to the same `add` command. The public archive was downloaded anonymously, checked against its SHA-256, installed into a separate Harness profile, and its configuration composition checked successfully.
-
-For Git-based installation, the complete package is also available at `git+https://github.com/AeolusJack/dsh-computer-pro.git#a36555989323639c96f0c3437a8a8a52db3230ef`. The repository includes the prebuilt Windows x64 runtime; no additional helper download or .NET SDK is required for Windows. On macOS, Swift 6 / Xcode 16+ tools and macOS 14+ are required to build helpers locally. Grant Accessibility and Screen Recording permissions through macOS settings. Chrome or Edge is required for browser DOM tools.
-
-After installation, start Harness and create a new session. Ask the agent to call `computer_pro_info`. Application-control permission remains with the upstream CUA permission flow. Do not enable another provider for `browserUse` at the same time.
-
-## Validation and provenance
-
-- 42 Node tests, 116 portable native protocol checks and 9 Windows desktop fixture checks passed on the development machine.
-- Harness integration exercised launch-and-observe, OCR on a session attachment, DOM fill/click/readback, standard/PTC modes, separate browser sessions, and rejection of cross-session OCR references.
-- Summary: [validation/windows-acceptance.json](validation/windows-acceptance.json). This evidence is from a single Windows machine, not independent certification.
-- Modified Windows native source: `upstream-native/`; new OCR/launch source: `extras-native/windows/`; Mac helper: `native/macos/Extras.swift`.
-- `payload-manifest.json` records hashes of the bundled Windows native files and the exact upstream commit. `node scripts/verify.mjs` verifies those bytes on Windows.
-- Native libraries contain vendor license notices; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-
-## Known limits
-
-Some Microsoft Store applications deny activation from Harness and must be opened manually. OCR may misread characters. Browser tools use separate per-session profiles, not personal browser login state. No UAC, lock-screen control or unattended login. Long-duration, multi-monitor/DPI, cross-machine and macOS acceptance remain outstanding. See [SECURITY.md](SECURITY.md) for data handling and permissions.
-
----
-
-# Computer Pro 0.2.0
-
-适配 DeepSeek Harness **0.2.2-rc.5**。保留 npm 名 `dsh-windows-computer-pro` 便于升级。Windows x64 已做本机验收；macOS Apple 芯片和 Intel 仅提供实验性适配，尚无 Mac 实机编译、签名、权限或运行验证。不是已获生产认证的产品。
-
-## 功能
-
-- 原生桌面：Windows UI Automation / macOS Accessibility、窗口、控件调用、键鼠、截图。保留官方授权。
-- 工作流：精确控件选择、歧义拒绝、串行执行、正向等待、取消、输入后验证；不自动重放输入。
-- 启动应用：`computer_pro_apps` 枚举启动目录，`computer_pro_launch` 按精确目录 ID 启动一次。启动 ID 与 cua ID 不同；启动后必须重新观察应用与窗口，不凭 dispatched 判断成功。
-- 本地 OCR：`computer_pro_ocr_languages` 查询语言，`computer_pro_ocr` 读取当前会话已有图片。Windows OCR / Apple Vision，不上传图片。
-- Chromium DOM：复用 Harness 固定的 Playwright MCP 0.0.80；实测 24 个工具，涵盖导航、快照、元素点击、表单、键盘、标签页、截图、脚本、控制台和网络信息。
-- `computer_pro_info` 返回版本、平台、初始化代码和模块位置。
-
-底层采用 DeepSeek MIT 开源 CUA；浏览器复用上游已集成的服务。不是 OpenAI 内部工具。
-
-## 安装与版本约束
-
-Windows：Windows 10 build 19041+，x64，Node.js 24.9+。自带 .NET 运行时，不需要 SDK。可双击交付的安装器，或在 Harness 目录中运行：
+需要 DeepSeek Harness **0.2.2-rc.5**、Node.js **24.9+**、pnpm；Windows 10 build 19041+、x64。Windows 包内含运行时，不需要 .NET SDK。更新正在运行的实例可在 DSH 插件管理页安装新版；命令行安装前关闭该 profile 的 Harness。
 
 ```powershell
-pnpm dsh plugin --profile web add "C:\path\dsh-windows-computer-pro-0.2.0.tgz"
+pnpm dsh plugin --profile web add "https://github.com/AeolusJack/dsh-computer-pro/releases/download/v0.3.0/dsh-windows-computer-pro-0.3.0.tgz"
 ```
 
-macOS 实验版：要求 macOS 14+、Swift 6（Xcode 16+ 开发工具）、同版本 Harness 源码安装、Node、pnpm、Chrome/Edge。同一 tgz 支持 arm64 / x64。在 Mac 上安装 Apple 开发工具后运行 `bash Install-macOS.command /path/to/deepseek-harness`。Harness 将构建其桌面 helper，本包首次使用 OCR/启动工具时用 `xcrun swiftc` 编译 Swift helper。需要用户授予辅助功能、录屏权限。没有已签名、公证的 Mac 安装器。
+[发行包与校验值](https://github.com/AeolusJack/dsh-computer-pro/releases/tag/v0.3.0)。也可下载 tgz 后将上述 URL 换成绝对路径。安装后新开 DSH 会话，调用 `computer_pro_info` 确认版本。不要同时启用另一套占用 computerUse/browserUse 的提供器。
 
-独立启用本包即可。若同时启用官方 Computer Use 组合包，本包必须排在官方之后，以禁用重复组件。不要同时启用另一个占用 browserUse 的浏览器后端；本包浏览器组件可单独禁用。更新后重新加载服务并新开会话，浏览器工具不会追加入已经运行的会话。
+## 0.3.0 的 Windows 改进
 
-## 调用方式
+| 问题 | 现在的行为 |
+| --- | --- |
+| 完全权限仍重复审批 | `fullAccessControlsDesktop: true` 默认开启。读取**当前会话**的完全权限，不再逐应用询问；每次调用重新核对。明确拒绝仍生效，不写入永久授权。关闭此选项即恢复上游审批流程。 |
+| WPS 不在启动目录、COM 启动失败 | 合并用户/系统 App Paths、开始菜单快捷方式、AppsFolder 和运行进程；单个目录失败不丢弃其他结果。商店启动通过 Explorer 调度，普通程序直接启动。 |
+| WPS 应用 ID 变化 | `selectApp` 可以使用已发现的 Windows exe 绝对路径；也提供按当前精确显示名重新查询的 `selectAppByName`。歧义仍拒绝。 |
+| 频繁 FOREGROUND_REQUIRED | 工作流的 Windows 键盘操作先尝试激活应用。系统拒绝激活或前台是另一窗口时仍停止；不强行抢占或把键发往别处。可设 `autoActivate:false`。 |
+| 关闭窗口后读树报错 | 无显式验证条件时返回 `dispatched-unverified` 和 `observationError`；用 `verify:{closed:true}` 检查窗口确实消失。显式验证失败仍报错。`strictObservation:true` 恢复旧行为。 |
+| OCR 返回 JSON 字符串 | 附加工具和 info 返回对象，可直接读取 `.text` / `.data`。Windows OCR 支持区域裁剪与 1–3 倍放大，词框换算回原始附件像素。 |
+| 不能操作任务栏/托盘 | 新增整桌面截图与系统指针 click/scroll/drag。支持显示器位置偏移与图像缩放换算；必须使用新截图凭证。 |
+| WPS 正文/表格 UIA 为空 | 新增保存文件的 DOCX/RTF/TXT 正文读取、精确替换，以及 XLSX 单元格/公式读取和写入。无需 WPS COM 或可访问性树。 |
 
-标准模式使用 `cua_run_code`；PTC 使用 `run_code`，通过 `tools` 调用其他工具。`computer_pro_info` 返回两种模式的初始化代码。
+普通 UIA/API 不会凭空补齐自绘控件的信息。优先顺序应是：应用专用 API/文件数据 → UIA/DOM → 截图/OCR/坐标。`observe().coverage` 报告可命名控件占比，帮助识别半盲界面。
+
+## 使用方式
+
+标准模式使用 `cua_run_code`；PTC 使用 `run_code`。`computer_pro_info` 返回两种模式的初始化代码。工作流模块通过 info 返回的 URL 导入。
 
 ```javascript
-var { createDesktop } = await import("computer_pro_info 返回的 workflowModule");
+var { createDesktop } = await import(workflowModule);
 var desktop = createDesktop(cua);
-inspect(await desktop.findApps("记事本"));
-var app = await desktop.selectApp("实际 cua 应用 ID");
+var app = await desktop.selectApp(discoveredExePath);
 inspect(await app.windows());
-var win = await app.window("实际窗口 ID");
+var win = await app.window(exactWindowId);
 inspect(await win.observe());
-await win.setValue({automationId:"实际控件 ID"}, "你好", {verify:true});
-inspect(await win.screenshot());
+await win.setValue({automationId: 'editor'}, '你好', {verify:true});
+await win.invoke({role:'Button',name:'不保存'}, {verify:{closed:true}});
 ```
 
-选择器支持 name、role、automationId、value、enabled、selected 精确匹配，以及 nameContains。invoke 的 verify 可指定正向确认控件。`dispatched:true` 不等于业务完成；找不到控件不能证明它不存在。等待不能强制中断已经进入原生系统的调用。
+选择器支持 name、role、automationId、value、enabled、selected、nameContains。零个或多个匹配都拒绝。新增包装方法 `paste`、`performAction`、`selectText`；原有 `click`、`drag`、`scroll`、`typeText`、`pressKey`、`screenshot` 保留。每次输入仅派发一次，不因超时或观察失败自动重放。
 
-`win.activate()` 是应用级激活。macOS 键盘作用域为应用，工作流要求选中窗口有可观察的焦点控件才发送键盘输入，`keyboardScope` 会说明作用域。不要在工作流之外并发操作同一应用。
+### WPS / Office 文件
 
-启动工具只接受刚查询到的启动目录 ID，不接受任意命令或额外参数。部分 Windows 商店应用在 Harness 内会被系统拒绝激活；此时返回错误，请手动打开，不会自动提权。
+`computer_pro_office_read({path, sheet?, range?})` 读取保存文件。`computer_pro_office_edit_copy({path,outputPath,operations,sheet?,range?})` 先写暂存副本，全部修改成功并重新打开后才发布新文件；拒绝覆盖已有目标。
 
-OCR：先让一次工具调用返回截图，再在后续调用用其 attachmentId 调用 OCR。用户上传的会话图片也可识别。只从当前会话日志定位图片，拒绝跨会话读取与任意文件路径。返回图像尺寸及文本框；Windows 为词级框，macOS 为行级框。坐标是图像左上角像素，不能直接当全局桌面坐标。上限 32 MiB / 2500 万像素，另受系统边长限制。OCR 会误读与错误分词，不能作为业务成功的唯一依据。
+```javascript
+// PTC 中直接通过 tools 调用；返回对象，无需 JSON.parse。
+var doc = await tools.computer_pro_office_read({path: 'D:\\docs\\report.docx'});
+inspect(doc.data.paragraphs);
+await tools.computer_pro_office_edit_copy({
+  path:'D:\\docs\\report.docx', outputPath:'D:\\docs\\report-edited.docx',
+  operations:[{kind:'replaceText',find:'唯一的原文',replacement:'修改后的内容'}]
+});
+await tools.computer_pro_office_edit_copy({
+  path:'D:\\docs\\data.xlsx', outputPath:'D:\\docs\\data-edited.xlsx',sheet:'Sheet1',range:'A1:D10',
+  operations:[{kind:'setCell',sheet:'Sheet1',cell:'B2',expected:12,value:15}]
+});
+```
 
-浏览器：新会话中调用 `mcp__playwright-mcp__*`；PTC 中用 `tools["mcp__playwright-mcp__browser_snapshot"]({})`。以当前工具 schema 为准，本版 click 和 fill_form 使用 `target` 参数。每个会话独立 Chromium，默认可见，不接管个人浏览器标签页或登录资料。会话卸载后关闭，登录状态不承诺持久化。Firefox、Safari、个人浏览器附加模式未交付。
+支持 DOCX、XLSX、RTF、UTF-8 TXT。DOCX 正文包括表格中的段落，不包括页眉页脚、批注；替换要求原文只出现一次且位于单一普通段落，可跨文字 run 并保留 run 格式。含修订、域或复杂段落的替换明确拒绝。RTF 由 Windows RichEdit 处理，复杂格式可能被规范化，须目视检查。
 
-配置行 computer-pro-browser 支持 executablePath（绝对路径）、headless、toolCallTimeoutMs。默认发现 Windows Edge/Chrome 和 Mac Chrome/Edge/Chromium；找不到时记录提示并跳过 DOM 后端，保留其他功能。
+XLSX 返回值与公式分开；日期是数值序列。已有公式值是**上次保存的缓存**，工具不计算公式；编辑后清空公式缓存并标记下次由 WPS/Excel 重算。字符串以文字保存，公式必须显式用 `formula:'=...'`。拒绝合并单元格、受保护工作表及共享/数组公式直接修改。默认读取 A1:T50，上限 10000 单元格。所有这些工具只处理磁盘文件，不读取尚未保存的编辑内容。
 
-## 稳定性与生产边界
+### 系统指针与 OCR
 
-Windows 后台直接在 Harness 管理的进程树启动，修复 Explorer COM 冷启动失败；不改系统策略、不提权。管道按用户、桌面会话、安装路径及原生版本隔离。一个 profile 不要运行多个 Harness 实例。关闭宿主会清理受它管理的子进程，被启动应用能否独立存活仍需按应用验证。
+`computer_pro_desktop_capture()` 返回附件、宽高、显示器信息和 `snapshotId`。随后 `computer_pro_desktop_action({snapshotId,action:'click',point:{x,y}})` 使用**返回图像内像素**。支持 `button`、`clickCount`；drag 还需 `to`，scroll 需 `delta`。截图凭证每个 agent 独立，30 秒有效、一次性使用；显示器布局变更后拒绝旧坐标。整桌面工具要求完全权限，存在明确拒绝的应用时停止，避免绕过应用拒绝。不会点 UAC 或锁屏，不会提权。Esc 可中断拖动，异常路径尝试释放按钮；进程被强杀/机器崩溃时不能保证释放。
 
-扩展工具最多排队 16 项，外部进程有输出上限、超时和取消。取消不能撤销已经发出的操作；失败后先观察再决定是否重试。浏览器继承上游文件访问边界；本机 Harness 报告文件沙箱仅部分实施，不是企业安全隔离。
+OCR 接受当前会话已有图片的 `attachmentId`。可加 `region:{x,y,width,height}` 和 `scale:2`。返回框始终对应原附件尺寸，不能直接当物理屏幕坐标；放大不会恢复原图中不存在的细节。识别本地执行，但输出文本仍会进入配置的模型上下文。Windows 为词框，macOS 为行框。
 
-没有 UAC/锁屏控制、无人值守登录、企业审计后台。多屏/DPI、远程桌面、自绘 UI、崩溃时按键释放、长时运行仍需验收。没有模型自主任务成功率和跨电脑生产稳定性承诺。哈希用于检测损坏，不是代码签名。
+### 浏览器、Blender、Unity
 
-## 源码构建
+浏览器继续提供 `mcp__playwright-mcp__*` 的 DOM/表单/导航/脚本工具，每个会话独立 Chromium，不接管个人 Chrome 登录态。默认查找 Chrome/Edge。浏览器组件可设 executablePath、headless、toolCallTimeoutMs。
 
-Windows 原生源码基于清单中的 DeepSeek 提交，修改了程序集名和 SharedRuntime.cs 的启动/管道隔离。另有新增的 Windows OCR/启动程序与 Swift helper。
+Blender 常通过其 Python API/后台命令行操作场景；Unity 常通过 C# Editor API、`-batchmode -executeMethod` 操作工程。它们的可靠性来自专用接口，而不是看图点击。这一版没有声称已交付或验收 Blender/Unity 专用适配器；DSH 已有脚本工具可以调用这些软件接口，桌面插件负责窗口和交互补充。
+
+## 权限与限制
+
+DSH 的文件完全权限本来不等同于应用授权。本插件的 `fullAccessControlsDesktop` 选项明确建立这项 Windows 映射。只读取真实当前会话策略，不自动修改策略、不自动回答批准问题、不持久化全权产生的应用授权。切回受限模式后，全权取得的句柄失效；既有人工授予的永久/会话授权按原规则保留。委派会话不使用这项快捷授权。
+
+Windows 新增文件/系统指针工具和启动工具要求完全权限。普通受限模式下可继续使用已授权的上游 CUA 功能。无法保证消除操作系统或目标软件自己的对话框。多屏拓扑换算已实现，但多种硬件、远程桌面、混合 DPI 与长时间运行仍需验收。
+
+本机当前测试环境的 Windows Graphics Capture 返回 E_ACCESSDENIED，因此上游单窗口截图项目存在限制；新增整桌面截图已通过测试。没有更改系统录屏策略或隐瞒失败。未把此项目计入成功数。自绘界面、复杂办公文档和公式计算仍有上述边界，不承诺所有软件都能无差别自动化。
+
+macOS arm64/x64 适配器保持实验状态，需要 macOS 14+、Swift 6 / Xcode 16+，以及系统辅助功能、录屏授权。0.3.0 的 Windows 专用改进没有宣称通过 Mac 验收。
+
+## 验证与源码
+
+测试结果见 `validation/`。测试窗口和文档均为自建样本，未修改用户办公文件。Windows 包核对所有运行时哈希；哈希不是签名或独立安全审计。
 
 ```powershell
-dotnet publish upstream-native/entry/CuaWindows.csproj -c Release -r win-x64 --self-contained true -o native/win-x64
+node scripts/vendor.mjs D:/deepseek-harness
 dotnet publish extras-native/windows/ComputerProExtras.csproj -c Release -r win-x64 --self-contained true -o native/win-x64
 node scripts/manifest.mjs 2e39e70496aa02986ca6a820c5d497e816b69d7e
 npm test
+$env:DSH_SOURCE='D:\deepseek-harness'
+node --import ./test/host-loader.mjs --test test/permissions.host.mjs
 npm run verify
 npm pack
 ```
 
-先构建后更新清单，不要打包运行日志。Mac 上可用 `scripts/check-macos.sh` 做编译和能力检查，但仍需交互验收。
-
-参考：[Harness](https://github.com/deepseek-ai/deepseek-harness)、[Playwright](https://playwright.dev/docs/library)、[Windows OCR](https://learn.microsoft.com/en-us/uwp/api/windows.media.ocr.ocrengine)、[Apple Vision](https://developer.apple.com/documentation/vision/recognizing-text-in-images)。
+`src/vendor/` 是固定上游提交的 MIT 运行时及小范围权限补丁；生成脚本遇到上游结构变化会停止。Windows 主 helper 继续沿用经验证的 0.2.0 程序，新增功能在 extras helper 中。不要打包运行日志。依赖和许可证见 THIRD_PARTY_NOTICES.md。

@@ -1,0 +1,35 @@
+{
+  "version": "0.3.0",
+  "status": "Windows acceptance candidate; not independently production-certified",
+  "harness": "0.2.2-rc.5",
+  "upstreamCommit": "2e39e70496aa02986ca6a820c5d497e816b69d7e",
+  "node": "24.14.0",
+  "dotnetSdk": "10.0.404",
+  "unitTests": {"passed":45,"failed":0},
+  "permissionTests": {"passed":7,"failed":0},
+  "nativeExtrasAcceptance": {
+    "passedChecks":11,
+    "coverage":["DOCX/RTF/UTF-8 TXT read and unique replacement", "XLSX typed values and formulas", "expected-value checks", "source hash unchanged", "atomic failure without output publication", "run formatting retained", "WPS catalogue", "owned-fixture system pointer and capture", "invalid coordinates and changed topology rejected"],
+    "repeatabilityNote":"A later pointer-test rerun stopped at the visibility guard when the owned fixture was not under the pointer. No input was sent. Host integration subsequently exercised capture/click successfully. Unattended foreground stability is not claimed."
+  },
+  "hostIntegration": {
+    "passed":true,
+    "fullAccessApprovalPrompts":0,
+    "restrictedApprovalPrompts":1,
+    "coverage":["full-access app selection", "explicit denial retained", "policy downgrade invalidates handle", "OCR object outputs", "OCR crop and scale", "document file read", "desktop capture and click", "invalid capture token rejected", "browser DOM navigate/snapshot"]
+  },
+  "installedPackageIntegration": {
+    "passed":true,
+    "programsPassed":5,
+    "approvalPrompts":0,
+    "coverage":["PTC semantic Chinese write and readback", "PTC invoke", "structured XLSX read", "XLSX edit-copy and reread", "WPS launch observed running", "standard cua_run_code facade"]
+  },
+  "knownLimitations":[
+    "Native Windows Graphics Capture returned E_ACCESSDENIED in this test environment; the inherited single-window screenshot check did not pass. Desktop capture is separately tested.",
+    "Full access does not override OS security, lock screen, UAC or explicit application denials.",
+    "No real macOS acceptance machine was available.",
+    "Mixed-DPI multi-monitor hardware, RDP, forced-crash button release and long-running workloads require further acceptance.",
+    "File adapters do not include unsaved UI edits or calculate spreadsheet formulas.",
+    "No dedicated Blender or Unity adapter is claimed."
+  ]
+}

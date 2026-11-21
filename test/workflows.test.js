@@ -124,8 +124,25 @@ test('plain dispatch never claims verification', async () => {
 });
 test('read failure after input is reported as uncertain outcome', async () => {
   const f = fixture({getAccessibilityTree:async()=>{throw new Error('window closed');}});
-  await assert.rejects((await f.controller()).typeText('abc'),{code:'ACTION_UNVERIFIED'});
+  const result=await (await f.controller()).typeText('abc');
+  assert.equal(result.status,'dispatched-unverified');assert.equal(result.verified,false);
   assert.equal(f.calls.filter(x=>x[0]==='typeText').length,1);
+});
+
+test('expected close verifies window disappearance without reading a dead window',async()=>{
+  const f=fixture();const win=await f.controller();
+  f.win.invoke=async()=>{f.app.getWindows=async()=>[];return {dispatched:true};};
+  const result=await win.invoke({name:'保存'},{verify:{closed:true}});
+  assert.equal(result.windowClosed,true);assert.equal(result.verified,true);
+});
+test('strict observation retains legacy exception semantics',async()=>{
+  const f=fixture({getAccessibilityTree:async()=>{throw new Error('closed');}});
+  await assert.rejects((await f.controller({strictObservation:true})).typeText('x'),{code:'ACTION_UNVERIFIED'});
+});
+test('Windows typing activates once before input without replay',async()=>{
+  const f=fixture();f.app.activate=async()=>{f.calls.push('activate');return {dispatched:true};};
+  await (await f.controller()).typeText('x');assert.equal(f.calls.filter(x=>x==='activate').length,1);
+  assert(f.calls.indexOf('activate')<f.calls.findIndex(x=>x[0]==='typeText'));
 });
 test('screenshot attachment is passed through unchanged', async () => {
   const f = fixture(); assert.equal((await (await f.controller()).screenshot()).attachmentId,'image');

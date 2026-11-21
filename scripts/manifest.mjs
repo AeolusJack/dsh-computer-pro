@@ -8,6 +8,7 @@ const native=resolve(root,'native/win-x64');
 const files=[];
 async function visit(directory) {
   for(const entry of await readdir(directory,{withFileTypes:true})) {
+    if(/\.(log|tmp)$/i.test(entry.name))continue;
     const path=resolve(directory,entry.name);
     if(entry.isDirectory())await visit(path);
     else if(entry.isFile()) {
