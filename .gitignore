@@ -1,0 +1,10 @@
+node_modules/
+**/bin/
+**/obj/
+.build/
+outputs/
+*.log
+*.tgz
+.env
+.env.*
+.DS_Store

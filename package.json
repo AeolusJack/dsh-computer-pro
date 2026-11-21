@@ -1,0 +1,88 @@
+{
+  "name": "dsh-windows-computer-pro",
+  "version": "0.2.0",
+  "description": "Computer Pro: desktop control, local OCR, application launch and isolated Chromium DOM tools; macOS experimental",
+  "type": "module",
+  "main": "src/provider.js",
+  "exports": {
+    ".": "./src/provider.js",
+    "./workflows": "./src/workflows.js",
+    "./info": "./src/info.js",
+    "./extras": "./src/extras.js",
+    "./browser": "./src/browser.js"
+  },
+  "files": [
+    "src",
+    "native/win-x64",
+    "payload-manifest.json",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md",
+    "native/macos"
+  ],
+  "engines": {
+    "node": ">=24.9.0",
+    "dsh": "0.2.2-rc.5"
+  },
+  "os": [
+    "win32",
+    "darwin"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ],
+  "license": "MIT",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml",
+      "platforms": [
+        "win32",
+        "darwin"
+      ]
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-computer-use": "0.2.2-rc.5",
+    "@deepseek-ai/cordis": "*",
+    "@deepseek-ai/schemastery": "*",
+    "@deepseek-ai/dsh-cua-windows": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-cua": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-tools": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-cua-macos": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-browser-use": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-experimental-browser-use-playwright-mcp": "0.2.2-rc.5"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "verify": "node scripts/verify.mjs"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/dsh-cua-windows": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-cua-macos": {
+      "optional": true
+    }
+  },
+  "author": {
+    "name": "AeolusJack",
+    "url": "https://github.com/AeolusJack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AeolusJack/dsh-computer-pro.git"
+  },
+  "homepage": "https://github.com/AeolusJack/dsh-computer-pro#readme",
+  "bugs": {
+    "url": "https://github.com/AeolusJack/dsh-computer-pro/issues"
+  },
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "computer-use",
+    "ocr",
+    "browser-automation"
+  ]
+}

@@ -1,0 +1,197 @@
+{
+  "version": "0.2.0",
+  "date": "2026-11-20",
+  "harnessVersion": "0.2.2-rc.5",
+  "releaseStatus": "WINDOWS_ACCEPTANCE_CANDIDATE_MACOS_EXPERIMENTAL",
+  "platforms": {
+    "windows-x64": "tested on this computer",
+    "macOS-arm64": "implemented, NOT compiled or tested on a Mac",
+    "macOS-x64": "implemented, NOT compiled or tested on a Mac"
+  },
+  "unitTests": {
+    "passed": 42,
+    "failed": 0
+  },
+  "nativeProtocolChecks": 116,
+  "nativeAcceptance": {
+    "passed": 9,
+    "failed": 0,
+    "checks": [
+      {
+        "name": "native capability handshake",
+        "passed": true,
+        "elapsedMs": 28
+      },
+      {
+        "name": "discover and select only the owned fixture",
+        "passed": true,
+        "elapsedMs": 843
+      },
+      {
+        "name": "read genuine UI Automation controls",
+        "passed": true,
+        "elapsedMs": 171
+      },
+      {
+        "name": "Chinese Unicode write with readback verification",
+        "passed": true,
+        "elapsedMs": 165
+      },
+      {
+        "name": "invoke button exactly once",
+        "passed": true,
+        "elapsedMs": 143
+      },
+      {
+        "name": "read-only wait verifies text",
+        "passed": true,
+        "elapsedMs": 60
+      },
+      {
+        "name": "unknown control never dispatches input",
+        "passed": true,
+        "elapsedMs": 64
+      },
+      {
+        "name": "window screenshot is valid PNG with declared dimensions",
+        "passed": true,
+        "elapsedMs": 580
+      },
+      {
+        "name": "keyboard text in explicitly focused owned window",
+        "passed": true,
+        "elapsedMs": 192
+      }
+    ],
+    "events": [
+      {
+        "method": "getCapabilities",
+        "ok": true
+      },
+      {
+        "method": "listApps",
+        "ok": true
+      },
+      {
+        "method": "listApps",
+        "ok": true
+      },
+      {
+        "method": "getApp",
+        "ok": true
+      },
+      {
+        "method": "listWindows",
+        "ok": true
+      },
+      {
+        "method": "listWindows",
+        "ok": true
+      },
+      {
+        "method": "getCapabilities",
+        "ok": true
+      },
+      {
+        "method": "getState",
+        "ok": true
+      },
+      {
+        "method": "getState",
+        "ok": true
+      },
+      {
+        "method": "setValue",
+        "ok": true
+      },
+      {
+        "method": "getState",
+        "ok": true
+      },
+      {
+        "method": "getState",
+        "ok": true
+      },
+      {
+        "method": "invoke",
+        "ok": true
+      },
+      {
+        "method": "getState",
+        "ok": true
+      },
+      {
+        "method": "getState",
+        "ok": true
+      },
+      {
+        "method": "getState",
+        "ok": true
+      },
+      {
+        "method": "listApps",
+        "ok": true
+      },
+      {
+        "method": "getApp",
+        "ok": true
+      },
+      {
+        "method": "screenshot",
+        "ok": true
+      },
+      {
+        "method": "activate",
+        "ok": true
+      },
+      {
+        "method": "getState",
+        "ok": true
+      },
+      {
+        "method": "typeText",
+        "ok": true
+      },
+      {
+        "method": "getState",
+        "ok": true
+      }
+    ],
+    "modelCalls": false,
+    "scope": "owned fixture only"
+  },
+  "integration": {
+    "passed": true,
+    "browserToolCount": 24,
+    "browserSessionIsolation": true,
+    "crossSessionOcrRejected": true,
+    "standardAndPtc": true,
+    "testedTools": [
+      "computer_pro_info",
+      "cua_run_code",
+      "computer_pro_apps",
+      "computer_pro_apps",
+      "computer_pro_launch",
+      "cua_run_code",
+      "computer_pro_ocr_languages",
+      "computer_pro_ocr",
+      "mcp__playwright-mcp__browser_navigate",
+      "mcp__playwright-mcp__browser_snapshot",
+      "mcp__playwright-mcp__browser_fill_form",
+      "mcp__playwright-mcp__browser_snapshot",
+      "mcp__playwright-mcp__browser_click",
+      "mcp__playwright-mcp__browser_snapshot",
+      "run_code",
+      "run_code",
+      "run_code",
+      "run_code"
+    ]
+  },
+  "knownLimits": [
+    "macOS has no real hardware acceptance, signing or notarization.",
+    "Some packaged Windows apps fail COM activation under Harness; open manually.",
+    "OCR can misrecognize Chinese characters; recognition is not proof of task success.",
+    "Browser runs in isolated Chrome/Edge sessions; personal profiles and Safari not included.",
+    "No endurance, cross-machine, multi-monitor/DPI or enterprise security certification."
+  ]
+}

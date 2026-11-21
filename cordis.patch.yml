@@ -1,0 +1,36 @@
+# Own the shared services as well as the Windows provider. If the official
+# bundle is present earlier, replace its rows to avoid duplicate services.
+- id: cua-provider-registry
+  disabled: true
+- id: cua-windows
+  disabled: true
+- id: cua-macos
+  disabled: true
+- id: ui-cua
+  disabled: true
+- insert:
+    - id: computer-pro-provider-registry
+      name: '@deepseek-ai/dsh-computer-use'
+    - id: computer-pro-ui-cua
+      name: '@deepseek-ai/dsh-cua'
+    - id: computer-pro-windows-provider
+      name: dsh-windows-computer-pro
+      config:
+        agentPreset: ptc
+        timeoutMs: 30000
+        axTimeoutMs: 20000
+        screenshotTimeoutMs: 20000
+        connectTimeoutMs: 30000
+        graceMs: 3000
+        maxClickHoldMs: 5000
+    - id: computer-pro-information
+      name: dsh-windows-computer-pro/info
+    - id: computer-pro-extras
+      name: dsh-windows-computer-pro/extras
+    - id: computer-pro-browser-registry
+      name: '@deepseek-ai/dsh-browser-use'
+    - id: computer-pro-browser
+      name: dsh-windows-computer-pro/browser
+      config:
+        headless: false
+        toolCallTimeoutMs: 30000
