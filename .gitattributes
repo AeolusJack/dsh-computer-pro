@@ -12,3 +12,4 @@
 *.png binary
 *.dat binary
 *.bin binary
+native/win-x64/** -text
