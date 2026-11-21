@@ -1,3 +1,4 @@
+import { desktopStatus } from './desktop-gate.js';
 import { fileURLToPath } from 'node:url';
 import { defineTool } from '@deepseek-ai/dsh-tools';
 import { verifyPayload } from './payload.js';
@@ -14,10 +15,10 @@ export function apply(ctx) {
     output: { schema: { type: 'object',additionalProperties:true }, render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }] },
     async execute() {
       const payload = process.platform==='win32' ? await verifyPayload(fileURLToPath(new URL('../', import.meta.url))) : null;
-      return { version: '0.3.0', platform: `${process.platform}-${process.arch}`, payloadVerified: payload!==null,
+      return { version: '0.4.0', platform: `${process.platform}-${process.arch}`, payloadVerified: payload!==null,
         validationStatus: process.platform==='darwin'?'EXPERIMENTAL_UNTESTED_ON_MAC':'WINDOWS_ACCEPTANCE_CANDIDATE',
-        nativeFiles: payload?.files ?? null, provider: ctx.get('computerUse')?.providerName ?? null,
-        addedTools:['computer_pro_apps','computer_pro_launch','computer_pro_ocr_languages','computer_pro_ocr',...(process.platform==='win32'?['computer_pro_office_read','computer_pro_office_edit_copy','computer_pro_desktop_capture','computer_pro_desktop_action']:[])],
+        nativeProtocol:1,desktopScheduler:desktopStatus(),nativeFiles: payload?.files ?? null, provider: ctx.get('computerUse')?.providerName ?? null,
+        addedTools:['computer_pro_control_status','computer_pro_apps','computer_pro_launch','computer_pro_ocr_languages','computer_pro_ocr',...(process.platform==='win32'?['computer_pro_office_read','computer_pro_office_edit_copy','computer_pro_desktop_capture','computer_pro_desktop_action','computer_pro_clipboard_image','computer_pro_window_capture','computer_pro_app_audit','computer_pro_windows','computer_pro_desktop_find_text']:[])],
         permissions:'Windows fullAccessControlsDesktop defaults to true: current-session full access avoids per-app prompts without persisting grants. Explicit app denials remain enforced. System pointer requires full access and no blocked apps; launch requires full access and respects blocked executable paths.',
         browserTools:'mcp__playwright-mcp__* in new live sessions when Chrome/Edge is available',
         workflowModule: workflowUrl,
@@ -27,9 +28,16 @@ export function apply(ctx) {
         examples: ['await desktop.findApps("记事本")', 'var app = await desktop.selectApp(exactAppId);',
           'inspect(await app.windows()); var win = await app.window(exactWindowId);',
           'inspect(await win.observe());', 'await win.setValue({automationId:"editor"}, "你好", {verify:true});',
+          'await win.waitFor({settle:{quietMs:2000}})', 'await win.waitFor({absent:{nameContains:"正在生成"},within:{role:"Group",nameContains:"回复"}})',
+          'await win.focus()', 'await win.click({role:"Button",name:"保存"},{verify:{selector:{name:"已保存"}}})',
           'await win.invoke({role:"Button", name:"保存"}, {verify:{selector:{name:"已保存"}}});',
-          'inspect(await win.screenshot());'],
-        limits: 'No UAC/lock-screen control. File tools read saved content, not unsaved WPS data. Spreadsheet formulas are not calculated. macOS requires acceptance testing. OCR is not proof. Browser uses a separate session. No automatic mutation replay.' };
+          'inspect(await win.screenshot());',
+          'await win.act([{op:"setValue",selector:{automationId:"editor"},value:"你好"},{op:"click",selector:{role:"Button",name:"保存"}}])',
+          'await win.findAll({role:"Button"},{limit:20}); await win.describe();',
+          'await computer_pro_clipboard_image({savePath:"D:\\out\\image.png"})',
+          'await computer_pro_window_capture({titleContains:"ChatGPT",savePath:"D:\\out\\window.png"})',
+          'await computer_pro_app_audit({maxWindows:15})'],
+        limits: '0.4.0: persistent Windows extras protocol, shared host desktop queue, one-use state-bound snapshots, native window/clipboard capture, OCR target candidates. tree budget auto-escalates when a read hits its cap; selectors support within/valueContains/valueMatches; act() batches observed steps. No UAC/lock-screen control. File tools read saved content, not unsaved WPS data. Spreadsheet formulas are not calculated. macOS requires acceptance testing. OCR is not proof. Browser uses a separate session. No automatic mutation replay.' };
     },
   }));
   ctx.systemPrompt.section({

@@ -28,6 +28,8 @@
       name: dsh-windows-computer-pro/info
     - id: computer-pro-extras
       name: dsh-windows-computer-pro/extras
+    - id: computer-pro-pro-tools
+      name: dsh-windows-computer-pro/pro
     - id: computer-pro-browser-registry
       name: '@deepseek-ai/dsh-browser-use'
     - id: computer-pro-browser

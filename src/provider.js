@@ -2,6 +2,8 @@ import { fileURLToPath } from 'node:url';
 import Schema from '@deepseek-ai/schemastery';
 const NativeProvider = await (process.platform === 'darwin' ? import('@deepseek-ai/dsh-cua-macos') : import('./vendor/windows.js'));
 import { verifyPayload } from './payload.js';
+import { setDesktopGuard } from './desktop-gate.js';
+import { native,disposeNative } from './extras-runtime.js';
 
 export const name = 'computer-pro-desktop';
 export const inject = NativeProvider.inject;
@@ -21,6 +23,8 @@ export async function apply(ctx, config) {
     return;
   }
   const payload = await verifyPayload(fileURLToPath(new URL('../', import.meta.url)));
+  const guard=async signal=>{const status=await native({method:'input_status'},signal);if(!status.available)throw new Error('INPUT_MONITOR_UNAVAILABLE');if(status.paused)throw new Error('DESKTOP_PAUSED: press Ctrl+Alt+F8 to resume');};
+  ctx.effect(()=>{const remove=setDesktopGuard(guard);return ()=>{remove();disposeNative();};},'computer-pro.input-guard');
   await NativeProvider.apply(ctx, { ...config, helperPath: payload.executable });
   ctx.logger.info(`Computer Pro loaded: ${payload.files} native files verified; SDK-free runtime; upstream ${payload.upstreamCommit}.`);
 }

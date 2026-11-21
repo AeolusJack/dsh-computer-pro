@@ -280,13 +280,13 @@
     },
     {
       "path": "dsh-computer-pro-extras.dll",
-      "bytes": 71168,
-      "sha256": "23fe285d3011954f15acacf70d0ec88261f2ca0e03a16bf226592096040cf12c"
+      "bytes": 94208,
+      "sha256": "686a2ac73a7e64dfbbc500617824cc5eab4cac53b400de46663a5f8b6f6020c2"
     },
     {
       "path": "dsh-computer-pro-extras.exe",
       "bytes": 162816,
-      "sha256": "b3207cb89eb22c6d0edf032eb3f318dd6a67d9ed22753e2a346fbf2d61684ccd"
+      "sha256": "3c5f90942bfaa429549d572fdbd8e5b072dc8296e67cc2ca182275328f5231b3"
     },
     {
       "path": "dsh-computer-pro-extras.runtimeconfig.json",

@@ -1,3 +1,4 @@
+import { desktopGate } from '../desktop-gate.js';
 // Derived from DeepSeek Harness 2e39e70496aa02986ca6a820c5d497e816b69d7e (MIT).
 import {createRequire as resolveZod} from 'node:module';
 import {pathToFileURL as zodURL} from 'node:url';
@@ -2492,7 +2493,7 @@ function installCua(ctx, config, backend) {
 						signal.throwIfAborted();
 						return result;
 					};
-					return "appHandle" in request.params ? access.run(nativeClient, request.params.appHandle, signal, dispatch, route?.prepare) : dispatch(signal);
+					return desktopGate("cua:"+request.method, signal, () => "appHandle" in request.params ? access.run(nativeClient, request.params.appHandle, signal, dispatch, route?.prepare) : dispatch(signal), {mutation: !["getCapabilities","listApps","findApps","getState","listWindows","listActions","screenshot"].includes(request.method)});
 				})();
 				pending.set(operation, agent);
 				try {

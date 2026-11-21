@@ -1,3 +1,41 @@
+# Computer Pro 0.4.0 — Windows acceptance candidate
+
+This release incorporates the locally installed 0.3.2 JavaScript changes and restores the maintained native C# source/build pipeline.
+
+## New in 0.4.0
+
+- Host-wide desktop scheduling joins authorized CUA calls, extras and pro tools. Permissions are checked when queued work starts. This coordinates one DSH host; independent DSH instances and unrelated automation are not mutually locked.
+- Native Windows extras use a private persistent stdio connection with protocol version, request identity, bounded response size, cancellation and timeout teardown. Never retries an uncertain mutation. The helper remains connected until plugin disposal; EOF exits the native server.
+- `computer_pro_windows` enumerates top-level windows without traversing UIA; exact IDs bind HWND, PID and process creation time.
+- `computer_pro_window_capture` uses native pixels and checks actual foreground and window identity. Multiple matches are rejected. The capture is a visible screen region and can contain overlays; it is not an unoccluded background-window capture.
+- Input hooks count mouse movement, buttons and keyboard activity without recording key text. No-op remote mouse events do not invalidate snapshots. Ctrl+Alt+F8 pauses/resumes new operations; pause persists across helper restarts. Query computer_pro_control_status for registration status. Existing native operations may finish before the next dispatch is blocked.
+- Clipboard image reads are native. Optional save paths create a new file and never overwrite an existing file.
+- Desktop screenshots issue one-use tokens for 30 seconds. Input requires unchanged foreground identity/bounds, display topology and actual input activity. Intervening user input stops stale actions. An action consumes its token even if its outcome is uncertain. `captureAfter` defaults to true; failure to observe after dispatch returns `dispatched-unverified`, not a replay.
+- `computer_pro_desktop_find_text({snapshotId,text,language?})` matches contiguous OCR words and returns all candidates with screenshot-pixel boxes/centers. OCR confidence is null where Windows provides none. Only click after choosing the intended unique target. Native action checks state again.
+- Tree budgets describe the reads actually performed. Permission errors retain their identity. Truncated observations cannot verify absence. `within` still filters an already acquired tree; it does not reduce native traversal.
+- Batch workflows stop with dispatch evidence if observation fails. A refused keyboard operation never silently replaces a text field.
+
+## Scope and remaining acceptance
+
+Windows x64 only has native acceptance evidence. Existing macOS adapter remains experimental. No UAC/secure desktop control or automatic elevation. Full DSH access avoids duplicate plugin app prompts; explicit application denials remain authoritative, including new pro tools.
+
+This is the first reliability/platform stage, not a claim of production readiness for all software. UIA worker isolation and event subscriptions, an independent input-release watchdog, cross-process desktop ownership, attach-to-existing-browser support, and Blender/Unity live adapters remain future stages. Raw native input still cannot guarantee button release after forcible termination. UIA hangs are bounded by existing host timeouts; pro UIA audit retains a separate bounded PowerShell worker. Saved-document adapters do not see unsaved WPS content. Multiple monitors, RDP and sustained soak tests require real-device acceptance.
+
+## Build and test
+
+```powershell
+dotnet publish extras-native/windows/ComputerProExtras.csproj -c Release -r win-x64 --self-contained true -o native/win-x64
+node scripts/manifest.mjs 2e39e70496aa02986ca6a820c5d497e816b69d7e
+npm test
+$env:DSH_SOURCE='D:/deepseek-harness'
+node --import ./test/host-loader.mjs --test test/permissions.host.mjs
+npm pack
+```
+
+The original 0.3.0 documentation follows for background; the behavior described above supersedes conflicting older statements.
+
+---
+
 # Computer Pro for DeepSeek Harness
 
 Windows desktop automation, local OCR, application launching, structured document editing, and isolated Chromium DOM tools.

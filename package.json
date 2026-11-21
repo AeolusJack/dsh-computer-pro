@@ -1,6 +1,6 @@
 {
   "name": "dsh-windows-computer-pro",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Computer Pro: desktop control, local OCR, application launch and isolated Chromium DOM tools; macOS experimental",
   "type": "module",
   "main": "src/provider.js",
@@ -9,6 +9,7 @@
     "./workflows": "./src/workflows.js",
     "./info": "./src/info.js",
     "./extras": "./src/extras.js",
+    "./pro": "./src/pro.js",
     "./browser": "./src/browser.js"
   },
   "files": [
@@ -65,10 +66,6 @@
     "@deepseek-ai/dsh-brand": "0.2.2-rc.5",
     "@deepseek-ai/dsh-native-command": "0.2.2-rc.5"
   },
-  "scripts": {
-    "test": "node --test test/*.test.js",
-    "verify": "node scripts/verify.mjs"
-  },
   "peerDependenciesMeta": {
     "@deepseek-ai/dsh-cua-windows": {
       "optional": true
@@ -95,5 +92,9 @@
     "computer-use",
     "ocr",
     "browser-automation"
-  ]
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "verify": "node scripts/verify.mjs"
+  }
 }

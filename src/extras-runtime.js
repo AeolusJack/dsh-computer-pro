@@ -1,3 +1,4 @@
+import { NativeBroker } from './native-broker.js';
 import { access, mkdtemp, rm, writeFile, readFile, mkdir, rename } from 'node:fs/promises';
 import { tmpdir, homedir } from 'node:os';
 import { join } from 'node:path';
@@ -6,7 +7,8 @@ import { createHash, randomUUID } from 'node:crypto';
 import { run } from './process.js';
 import { verifyPayload } from './payload.js';
 const root=fileURLToPath(new URL('../',import.meta.url));
-let preparation;
+let preparation, broker;
+export function disposeNative() { broker?.close(); broker = undefined; }
 async function prepare() {
   if(process.platform==='win32') {await verifyPayload(root);return join(root,'native/win-x64/dsh-computer-pro-extras.exe');}
   if(process.platform!=='darwin')throw new Error('UNSUPPORTED_PLATFORM');
@@ -27,6 +29,7 @@ export async function native(request,signal) {
   signal?.throwIfAborted();
   preparation??=prepare().catch(error=>{preparation=undefined;throw error;});
   const executable=await preparation;
+  if(process.platform==='win32') { broker ??= new NativeBroker(executable); return broker.request(request,signal); }
   const reply=JSON.parse(await run(executable,[],{input:JSON.stringify(request),signal,maxBytes:40*1024*1024,timeoutMs:60000}));
   if(!reply.ok)throw new Error(reply.error||'NATIVE_FAILED');
   return reply.result;

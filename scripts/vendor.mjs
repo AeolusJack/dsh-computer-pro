@@ -19,6 +19,9 @@ for(const [file,pkg] of [['cua.js','cua'],['windows.js','cua-windows']]) {
   let text=await readFile(resolve(upstream,`packages/experimental/${pkg}/lib/index.js`),'utf8');
   sources[pkg]={sha256:createHash('sha256').update(text).digest('hex'),upstream:'2e39e70496aa02986ca6a820c5d497e816b69d7e'};
   if(pkg==='cua') {
+    text = "import { desktopGate } from '../desktop-gate.js';\n" + text;
+    text = replace(text, 'return "appHandle" in request.params ? access.run(nativeClient, request.params.appHandle, signal, dispatch, route?.prepare) : dispatch(signal);', 'return desktopGate("cua:"+request.method, signal, () => "appHandle" in request.params ? access.run(nativeClient, request.params.appHandle, signal, dispatch, route?.prepare) : dispatch(signal), {mutation: !["getCapabilities","listApps","findApps","getState","listWindows","listActions","screenshot"].includes(request.method)});');
+
     text=replace(text,'JSON.stringify(new URL("../lib/bridge.js", import.meta.url).href)',`JSON.stringify(import.meta.resolve('@deepseek-ai/dsh-cua/bridge'))`);
     text=replace(text,'JSON.stringify(new URL(`./bridge${extname(new URL(import.meta.url).pathname)}`, import.meta.url).href)',`JSON.stringify(import.meta.resolve('@deepseek-ai/dsh-cua/bridge'))`);
     text=replace(text,'const access = installCuaAccess(ctx, {','const access = installCuaAccess(ctx, {\n\t\tfullAccessControlsDesktop: config.fullAccessControlsDesktop === true,');

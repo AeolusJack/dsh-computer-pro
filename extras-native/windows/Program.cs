@@ -1,35 +1,57 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json;
-using Windows.Globalization;
-using Windows.Graphics.Imaging;
-using Windows.Media.Ocr;
-using Windows.Storage.Streams;
+using global::Windows.Globalization;
+using global::Windows.Graphics.Imaging;
+using global::Windows.Media.Ocr;
+using global::Windows.Storage.Streams;
 
 internal static class Program {
     static readonly JsonSerializerOptions Json = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-    [STAThread] static int Main() {
+    [STAThread] static int Main(string[] args) {
+        Console.InputEncoding=new System.Text.UTF8Encoding(false,true);
+        Console.OutputEncoding=new System.Text.UTF8Encoding(false);
+        if(args.SequenceEqual(new[]{"--server"})) {
+            string? line;
+            while((line=Console.ReadLine())!=null) {
+                string? id=null;
+                try {
+                    if(line.Length>4*1024*1024)throw new ArgumentException("REQUEST_TOO_LARGE");
+                    using var envelope=JsonDocument.Parse(line);
+                    var root=envelope.RootElement;id=root.GetProperty("id").GetString();
+                    if(root.GetProperty("protocol").GetInt32()!=1||string.IsNullOrEmpty(id))throw new ArgumentException("PROTOCOL_VERSION");
+                    var result=Dispatch(root.GetProperty("request"));
+                    Console.WriteLine(JsonSerializer.Serialize(new{protocol=1,id,ok=true,result},Json));
+                }catch(Exception e){Console.WriteLine(JsonSerializer.Serialize(new{protocol=1,id,ok=false,error=e.Message},Json));}
+            }
+            return 0;
+        }
         try {
             Console.InputEncoding=new System.Text.UTF8Encoding(false,true);
             Console.OutputEncoding=new System.Text.UTF8Encoding(false);
             using var doc = JsonDocument.Parse(Console.In.ReadToEnd());
             var r=doc.RootElement;
-            object result = r.GetProperty("method").GetString() switch {
-                "capabilities" => new {platform="windows", languages=OcrEngine.AvailableRecognizerLanguages.Select(l=>l.LanguageTag).ToArray(), maxImageDimension=OcrEngine.MaxImageDimension},
+            var result=Dispatch(r);
+            Console.WriteLine(JsonSerializer.Serialize(new {ok=true,result}, Json));return 0;
+        } catch(Exception e) {
+            Console.WriteLine(JsonSerializer.Serialize(new {ok=false,error=e.Message}, Json));return 1;
+        }
+    }
+    static object Dispatch(JsonElement r) => r.GetProperty("method").GetString() switch {
+                "capabilities" => new {protocol=1,platform="windows",version="0.4.0",methods=new[]{"capabilities","apps","launch","ocr","office_read","office_edit_copy","desktop_capture","desktop_action","windows","window_capture","clipboard_image","input_status"},languages=OcrEngine.AvailableRecognizerLanguages.Select(l=>l.LanguageTag).ToArray(), maxImageDimension=OcrEngine.MaxImageDimension},
                 "apps" => Applications.Catalog(),
                 "launch" => Applications.Launch(r.GetProperty("id").GetString() ?? ""),
                 "office_read" => Office.Read(r),
                 "office_edit_copy" => Office.EditCopy(r),
                 "desktop_capture" => Desktop.Capture(),
                 "desktop_action" => Desktop.Act(r),
+                "windows" => NativeWindows.Catalog(),
+                "input_status" => InputWatch.Status(),
+                "window_capture" => NativeWindows.Capture(r),
+                "clipboard_image" => NativeWindows.ClipboardImage(),
                 "ocr" => Recognize(r).GetAwaiter().GetResult(),
                 _ => throw new ArgumentException("UNKNOWN_METHOD")
             };
-            Console.WriteLine(JsonSerializer.Serialize(new {ok=true,result}, Json));return 0;
-        } catch(Exception e) {
-            Console.WriteLine(JsonSerializer.Serialize(new {ok=false,error=e.Message}, Json));return 1;
-        }
-    }
     static async Task<object> Recognize(JsonElement r) {
         string path=r.GetProperty("path").GetString() ?? throw new ArgumentException("IMAGE_REQUIRED");
         var file=new FileInfo(path);
