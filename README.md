@@ -5,15 +5,17 @@ Maintained by [AeolusJack](https://github.com/AeolusJack). Community plugin; not
 
 **Release status:** Windows x64 acceptance candidate. macOS arm64 and x64 adapters are experimental and have not been compiled or tested on a Mac. This is not a cross-platform production-certified release.
 
-## Install from this repository
+## Install the published package
 
 Requires DeepSeek Harness **0.2.2-rc.5**, Node.js **24.9+**, and pnpm. Close Harness before an offline installation. Run in the Harness source checkout:
 
 ```sh
-pnpm dsh plugin --profile web add "git+https://github.com/AeolusJack/dsh-computer-pro.git#v0.2.0"
+pnpm dsh plugin --profile web add "https://github.com/AeolusJack/dsh-computer-pro/releases/download/v0.2.0/dsh-windows-computer-pro-0.2.0.tgz"
 ```
 
-For an immutable installation, replace `v0.2.0` with its full 40-character commit SHA. The repository includes the prebuilt Windows x64 runtime; no install-time download or .NET SDK is required for Windows. On macOS, Swift 6 / Xcode 16+ tools and macOS 14+ are required to build helpers locally. Grant Accessibility and Screen Recording permissions through macOS settings. Chrome or Edge is required for browser DOM tools.
+Download and checksums: [v0.2.0 release](https://github.com/AeolusJack/dsh-computer-pro/releases/tag/v0.2.0). If your package manager cannot download the URL, download the `.tgz` there and supply its absolute local path to the same `add` command. The public archive was downloaded anonymously, checked against its SHA-256, installed into a separate Harness profile, and its configuration composition checked successfully.
+
+For Git-based installation, the complete package is also available at `git+https://github.com/AeolusJack/dsh-computer-pro.git#a36555989323639c96f0c3437a8a8a52db3230ef`. The repository includes the prebuilt Windows x64 runtime; no additional helper download or .NET SDK is required for Windows. On macOS, Swift 6 / Xcode 16+ tools and macOS 14+ are required to build helpers locally. Grant Accessibility and Screen Recording permissions through macOS settings. Chrome or Edge is required for browser DOM tools.
 
 After installation, start Harness and create a new session. Ask the agent to call `computer_pro_info`. Application-control permission remains with the upstream CUA permission flow. Do not enable another provider for `browserUse` at the same time.
 
